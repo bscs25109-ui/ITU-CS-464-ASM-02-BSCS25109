@@ -119,6 +119,11 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!4 &441252225 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6069959864928327956, guid: 83209850db73db948b1bb2440bb983b5, type: 3}
+  m_PrefabInstance: {fileID: 613996219393754244}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1703695905
 GameObject:
   m_ObjectHideFlags: 0
@@ -569,8 +574,8 @@ MonoBehaviour:
   target: {fileID: 613996219393754250}
   targetBody: {fileID: 613996219393754249}
   offset: {x: 0, y: 4, z: -7}
-  sharpness: 5
-  lookAhead: 0.35
+  sharpness: 10
+  lookAhead: 0.15
 --- !u!1001 &613996219393754244
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -623,6 +628,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5608343250941055023, guid: 83209850db73db948b1bb2440bb983b5, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 8996e55d589b6d64ba2aded0b5bd0459, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -630,6 +639,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1599601749435739782, guid: 83209850db73db948b1bb2440bb983b5, type: 3}
       insertIndex: -1
       addedObject: {fileID: 613996219393754247}
+    - targetCorrespondingSourceObject: {fileID: 1599601749435739782, guid: 83209850db73db948b1bb2440bb983b5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 613996219393754251}
   m_SourcePrefab: {fileID: 100100000, guid: 83209850db73db948b1bb2440bb983b5, type: 3}
 --- !u!1 &613996219393754245 stripped
 GameObject:
@@ -674,6 +686,20 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5458519723309867740, guid: 83209850db73db948b1bb2440bb983b5, type: 3}
   m_PrefabInstance: {fileID: 613996219393754244}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &613996219393754251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 613996219393754245}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b773935f6de521b428459dda94512b79, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LandingSquash
+  body: {fileID: 441252225}
+  duration: 0.2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
