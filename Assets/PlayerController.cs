@@ -28,6 +28,13 @@ public class PlayerController : MonoBehaviour
     private float lastGroundedTime = float.NegativeInfinity;
     private float lastPressedTime = float.NegativeInfinity;
     private float ignoreGroundUntil = float.NegativeInfinity;
+    public bool HasJumped { get; private set; }
+    public bool IsGrounded => isGrounded;
+
+    public void ClearJump()
+    {
+        HasJumped = false;
+    }
 
     void Awake()
     {
@@ -122,7 +129,7 @@ public class PlayerController : MonoBehaviour
                 Vector3.up * rb.mass * launchSpeed,
                 ForceMode.Impulse
             );
-
+            HasJumped = true;
             jumpQueued = false;
             isGrounded = false;
 
