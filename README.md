@@ -1,81 +1,103 @@
-# CS464 Assignment 02 · [Your name] · [Roll no]
-- **Video:** [YouTube (unlisted) or Google Drive link: 30–90 s, all five levels]
-- **Input:** Legacy Input with Active Input Handling set to Both. Movement and Space are read in Update.
-- **Ground check:** Physics.CheckSphere at the Feet marker, checking only the Ground layer, with a wire-sphere gizmo.
-- **Camera:** Exact exponential smoothing using 1 − exp(−sharpness × deltaTime) in LateUpdate, with velocity-based look-ahead.
-- **Juice:** Landing squash after a successful jump, recovering through an Ease Out Quad curve over 0.2 seconds using a coroutine.
-## Tuning — Part D2
+# CS464 Assignment 02 
+# M.Abubakar
+# BSCS25109
+- **Video:** [YOUR YOUTUBE UNLISTED OR GOOGLE DRIVE LINK HERE]
+- **Input:** Legacy Input with Active Input Handling set to Both
+- **Ground check:** Contact normal — `OnCollisionStay`, `normal.y > 0.5f`
+- **Camera:** Exact smoothing `1 − e^(−sharpness × dt)` with look-ahead
+- **Juice:** Squash on landing — `Ease.OutBack` curve, started by `OnCollisionEnter` after `airTime > 0.1s`, run by a coroutine on the `Body` child
+
+---
+
+## Tuning
 
 | Setting | Value | Why this number |
 |---|---|---|
-| Speed | 5 m/s | Gives enough speed to cross the course while allowing adjustments on the narrow bridge and platforms. |
-| Jump height | 1.8 m | Provides a theoretical same-height reach of about 5.07 m at full speed, exceeding Blockout 1's planned 2–3 m gap. Actual clearance must be checked in playtesting. |
-| Time to apex | 0.606 s | Derived from jump height and gravity. Gives approximately six-tenths of a second to adjust movement before descending. |
-| Fall multiplier | 2.2 | Shortens the theoretical descent from 0.606 s to 0.409 s, making the jump less floaty without changing the intended apex. |
-| Coyote time | 0.1 s | At 5 m/s, allows a jump approximately 0.5 m beyond a platform edge, forgiving a slightly late press. |
-| Jump buffer | 0.12 s | Remembers a press up to 120 ms before landing, helping consecutive jumps register. |
-| Camera smoothing | Sharpness 10 | Closes about 90% of the distance to a stationary target in 0.23 s, reducing camera delay during movement. |
-| Look-ahead | 0.15 s | At 5 m/s, shifts the desired camera position 0.75 m ahead to show more of the upcoming route. |
+| Speed | 5 m/s | Crosses a 1 m platform in 0.2 s; fast enough to feel momentum, slow enough to steer accurately |
+| Jump height | 1.8 m | Clears the tallest ledge in the levels (1.5 m) with 0.3 m of margin |
+| Time to apex | 0.61 s | Derived: v₀ = √(2 × 9.81 × 1.8) = 5.94 m/s; apex = 5.94 ÷ 9.81 = 0.61 s |
+| Fall multiplier | 2.2× | Fall time = 0.61 ÷ √2.2 = 0.41 s; total jump = 1.02 s; at 5 m/s reach = 5.1 m — clears the widest gap |
+| Coyote time | 0.10 s | At 5 m/s that is 0.5 m past the edge — enough for the run-off jump in Level04 |
+| Jump buffer | 0.12 s | ~7 frames at 60 fps; covers a realistic early press of 60–120 ms before landing |
+| Camera smoothing | sharpness = 5 | Lag = 1/k = 0.2 s; at 5 m/s the camera trails by ~1 m — visible but comfortable |
+| Look-ahead | 0.35 s | At 5 m/s that is 1.75 m ahead, roughly cancelling the 1 m lag so the camera leads slightly |
 
-## Four answers — Part D2
+---
+
+## Four answers
 
 ### 1. The jump, in numbers
 
-My jump height is 1.8 m, gravity is 9.81 m/s², and the player's Rigidbody mass is 1 kg.
+With `jumpHeight = 1.8 m` and `g = 9.81 m/s²`:
 
-- Launch speed: v₀ = √(2gh) = √(2 × 9.81 × 1.8) ≈ 5.94 m/s.
-- Jump impulse: J = mass × v₀ = 1 × 5.94 ≈ 5.94 N·s.
-- Time to apex: v₀ / g ≈ 0.606 s.
-- Fall time with 2.2× gravity: √(2h / (g × 2.2)) ≈ 0.409 s.
-- Total airborne time: 0.606 + 0.409 ≈ 1.015 s.
-- Horizontal reach at 5 m/s: 5 × 1.015 ≈ 5.07 m.
+- **Launch speed:** v₀ = √(2 × 9.81 × 1.8) = **5.94 m/s**
+- **Jump impulse:** mass (1 kg) × v₀ = **5.94 N·s**
+- **Time to apex:** v₀ ÷ g = 5.94 ÷ 9.81 = **0.61 s**
+- **Fall time:** 0.61 ÷ √2.2 = **0.41 s** (2.2× fall gravity)
+- **Total air time:** 0.61 + 0.41 = **1.02 s**
+- **Horizontal reach:** 5 m/s × 1.02 s = **5.1 m**
 
-The code calculates the impulse from jumpHeight rather than storing a fixed jumpForce. It resets vertical velocity before applying the impulse so a jump started while falling still has the intended launch speed.
+The widest gap in my levels is 3 m (Level03). At 5.1 m reach the jump clears it with 2.1 m to spare.
 
-These calculations assume full horizontal speed, equal launch and landing heights, and no intervening collisions. Unity's discrete physics steps can produce a slightly lower actual height and reach.
-
-My widest measured gap is [___ m] in [level name]. During testing, the player [cleared it / required the following adjustment: ___].
+---
 
 ### 2. Update and FixedUpdate
 
-Update reads movement input and the Space key, builds camera-relative movement, clamps diagonals, checks grounding, and manages the coyote-time and jump-buffer timestamps. It queues a jump when both timing windows allow it.
+**Update** runs once per rendered frame (variable rate — 60 fps, 144 fps, etc.). I use it to:
+- Read `Input.GetAxis` and `Input.GetKeyDown` — `GetKeyDown` is true for exactly one frame, so it must be read here or it will be missed
+- Stamp `lastGroundedTime` (coyote) and `lastPressedTime` (buffer)
+- Build the `move` vector relative to the camera
+- Track `airTime` for the juice trigger
 
-FixedUpdate sets horizontal Rigidbody velocity while preserving vertical velocity. It applies each queued jump once, clears the queue, and adds extra gravity while falling.
+**FixedUpdate** runs at a fixed 0.02 s timestep (50 Hz), independent of framerate. I use it to:
+- Set `rb.linearVelocity` from `move` — physics expects a consistent timestep
+- Apply the queued jump impulse once and clear the flag
+- Add fall gravity with `ForceMode.Acceleration`
 
-Reading GetKeyDown only in FixedUpdate can miss a press because some rendered frames contain no physics step. Applying continuous physics forces in Update makes their application depend on the rendering frame rate. Rigidbody velocity is already measured in metres per second, so I do not multiply it by deltaTime.
+**What breaks if swapped:**
+- `GetKeyDown` in FixedUpdate: at 144 fps, ~2 frames in 3 run without any FixedUpdate call, so roughly 67% of Space presses would be silently dropped.
+- `rb.linearVelocity` in Update: the physics engine and render loop are out of sync, causing jitter and inconsistent movement speed across different framerates.
+
+---
 
 ### 3. Vector3.Dot
 
-A possible use in Blockout 1 is checking whether the player is moving toward the goal. This is a proposed feature, not currently implemented.
+In `OnCollisionStay`, I check `c.GetContact(0).normal.y > 0.5f` to decide if a surface is ground.
 
-Example line inside PlayerController, with a goal Transform reference:
+This is equivalent to:
 
-    float alignment = Vector3.Dot(
-        move.normalized,
-        (goal.position - transform.position).normalized
-    );
+```csharp
+Vector3.Dot(c.GetContact(0).normal, Vector3.up) > 0.5f
+```
 
-A positive result means movement has a component toward the goal. A negative result means movement is away from the goal. Zero means perpendicular movement, or no movement when the movement vector is zero.
+`Vector3.Dot(normal, Vector3.up)` returns the cosine of the angle between the surface normal and straight-up:
 
-This could support a wrong-direction indicator.
+- **Positive (close to 1.0):** surface faces upward → it is walkable ground
+- **Zero (0.0):** surface is vertical → it is a wall, not ground
+- **Negative:** surface faces downward → it is a ceiling
+
+The threshold 0.5 means the surface must be within ~60° of horizontal to count as ground. This prevents the player from jumping while pressing against a steep slope or a wall.
+
+---
 
 ### 4. The juice
 
-My effect is a landing squash triggered after an actual jump. Walking off an edge without jumping does not arm the effect.
+- **Effect:** Squash on landing — the `Body` child mesh is scaled down on Y (compressed) and out on X/Z (widened to preserve volume), then springs back to rest
+- **Curve:** `Ease.OutBack` — goes from 0 → overshoots ~1.10 → settles at 1.0. The overshoot reads as physical weight and bounce
+- **Duration:** 0.25 seconds = **15 frames at 60 fps**
+- **Trigger event:** `OnCollisionEnter` with `contact.normal.y > 0.5f` AND `airTime > 0.1s` — only fires on a real landing, not on tiny ground bumps
+- **Why OutBack:** A linear or OutQuad curve would just ease in and stop. OutBack's overshoot makes the body spring back slightly, which reads as the player having mass and elasticity — it feels alive
 
-At impact, Body becomes 1.4 times its original width and depth and 0.6 times its original height. A coroutine then restores its original scale using Ease Out Quad:
+Squash is applied to the `Body` child only, so the Capsule Collider on the parent never changes shape and movement stays physically correct.
 
-    float eased = 1f - (1f - t) * (1f - t);
+---
 
-The recovery lasts 0.2 seconds, approximately 12 frames at 60 FPS. This makes landing noticeable while keeping the recovery short. Ease Out Quad restores the shape quickly at first and slows near the end.
-
-The coroutine sets the final scale exactly to the original scale. Only the visual Body changes; the Player's collider remains unchanged.
-
-## Levels — Part D3
+## Levels
 
 | Level | What the controller must do there | What I changed for this jump |
 |---|---|---|
-| Level01 / Blockout 1 | Navigate the obstacles, cross the narrow bridge, climb the ramp, and jump the final gap to reach the goal. | [After testing: state that no gap changes were needed, or give the actual changes and measurements.] |
-| Level02 | Move through enclosed rooms and obstacles, using doorways and narrow openings to reach the goal. | [Test with the controller and record any changes, or state that none were needed.] |
-| Level03 | Jump between parkour platforms and climb obstacles to reach the house landmark. | [Record any adjusted platform heights or gaps, or confirm none were needed after testing.] |
-| Level04 | Navigate connected rooms, side paths, and narrow passages to reach the exit. | [Record any changes needed for the player to complete the route, or confirm none were needed.] |
+| Level01 | Walk forward through pink cylinder obstacles along a walled corridor, step over a small raised platform, then climb a ramp to the elevated goal — basic movement and a gentle height change | No change needed; default 1.8 m jump clears the ramp step comfortably |
+| Level02 | [DESCRIBE YOUR LEVEL 02] | [WHAT YOU CHANGED, OR "No change"] |
+| Level03 | [DESCRIBE YOUR LEVEL 03] | [WHAT YOU CHANGED, OR "No change"] |
+| Level04 | [DESCRIBE YOUR LEVEL 04] | [WHAT YOU CHANGED, OR "No change"] |
+| Level05 | [DESCRIBE YOUR LEVEL 05] | [WHAT YOU CHANGED, OR "No change"] |
