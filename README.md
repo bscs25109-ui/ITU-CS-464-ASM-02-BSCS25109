@@ -1,7 +1,7 @@
 # CS464 Assignment 02 
 # M.Abubakar
 # BSCS25109
-- **Video:** [YOUR YOUTUBE UNLISTED OR GOOGLE DRIVE LINK HERE]
+- **Video:** https://drive.google.com/file/d/1Ox3ziNRM2IPjxzRJRtLotByjQb44AWwY/view?usp=sharing
 - **Input:** Legacy Input with Active Input Handling set to Both
 - **Ground check:** Contact normal — `OnCollisionStay`, `normal.y > 0.5f`
 - **Camera:** Exact smoothing `1 − e^(−sharpness × dt)` with look-ahead
