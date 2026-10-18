@@ -94,10 +94,9 @@ Squash is applied to the `Body` child only, so the Capsule Collider on the paren
 
 ## Levels
 
-| Level | What the controller must do there | What I changed for this jump |
+| Blockouts | What the controller must do there | What I changed for this jump |
 |---|---|---|
-| Level01 | Walk forward through pink cylinder obstacles along a walled corridor, step over a small raised platform, then climb a ramp to the elevated goal — basic movement and a gentle height change | No change needed; default 1.8 m jump clears the ramp step comfortably |
-| Level02 | [DESCRIBE YOUR LEVEL 02] | [WHAT YOU CHANGED, OR "No change"] |
-| Level03 | [DESCRIBE YOUR LEVEL 03] | [WHAT YOU CHANGED, OR "No change"] |
-| Level04 | [DESCRIBE YOUR LEVEL 04] | [WHAT YOU CHANGED, OR "No change"] |
-| Level05 | [DESCRIBE YOUR LEVEL 05] | [WHAT YOU CHANGED, OR "No change"] |
+| B01 | Walk forward through pink cylinder obstacles along a walled corridor, step over a small raised platform, then climb a ramp to the elevated goal — basic movement and a gentle height change | No change needed; default 1.8 m jump clears the ramp step comfortably |
+| B02 | [Move through enclosed rooms and narrow doorways, steer around obstacles, and follow the route to the end.] | [No change needed; default 1.8 m jump clears the ramp step comfortably ] |
+| B03 | [Jump between raised platforms above the hazard, control each landing, and follow the parkour route toward the house.] | [No change needed;  3m jump because of the parkour  ] |
+| B04 | [Navigate connected rooms and side passages, make controlled turns through narrow spaces, and find the final exit.] | [No change needed; default 1.8 m jump  ] |
