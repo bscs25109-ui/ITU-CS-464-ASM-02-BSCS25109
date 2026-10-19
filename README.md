@@ -3,7 +3,7 @@
 # BSCS25109
 - **Video:** https://drive.google.com/file/d/1Ox3ziNRM2IPjxzRJRtLotByjQb44AWwY/view?usp=sharing
 - **Input:** Legacy Input with Active Input Handling set to Both
-- **Ground check:** Contact normal — `OnCollisionStay`, `normal.y > 0.5f`
+- **Ground check:**`Physics.CheckSphere` at the Feet child, radius 0.19 m, and the mask only includes the Ground layer. A wire-sphere gizmo shows it.
 - **Camera:** Exact smoothing `1 − e^(−sharpness × dt)` with look-ahead
 - **Juice:** Squash on landing — `Ease.OutBack` curve, started by `OnCollisionEnter` after `airTime > 0.1s`, run by a coroutine on the `Body` child
 
@@ -96,7 +96,7 @@ Squash is applied to the `Body` child only, so the Capsule Collider on the paren
 
 | Blockouts | What the controller must do there | What I changed for this jump |
 |---|---|---|
-| B01 | Walk forward through pink cylinder obstacles along a walled corridor, step over a small raised platform, then climb a ramp to the elevated goal — basic movement and a gentle height change | No change needed; default 1.8 m jump clears the ramp step comfortably |
-| B02 | [Move through enclosed rooms and narrow doorways, steer around obstacles, and follow the route to the end.] | [No change needed; default 1.8 m jump clears the ramp step comfortably ] |
-| B03 | [Jump between raised platforms above the hazard, control each landing, and follow the parkour route toward the house.] | [No change needed;  3m jump because of the parkour  ] |
-| B04 | [Navigate connected rooms and side passages, make controlled turns through narrow spaces, and find the final exit.] | [No change needed; default 1.8 m jump  ] |
+| B01 | Walk forward through pink cylinder obstacles along a walled corridor, step over a small raised platform, then climb a ramp to the elevated goal — basic movement and a gentle height change | Kept the same Player prefab with 5 m/s movement and a 1.8 m jump. |
+| B02 | Move through enclosed rooms and narrow doorways, steer around obstacles, and follow the route to the end. | Used the same movement and jump settings for navigating the enclosed route. |
+| B03 | Jump between raised platforms above the hazard, control each landing, and follow the parkour route toward the house.| Used the 3 m jump and 7 m/s movement for the platform jumps and parkour |
+| B04 | Navigate connected rooms and side passages, make controlled turns through narrow spaces, and find the final exit. | Kept the same Player prefab and movement settings for the maze-like layout.|
